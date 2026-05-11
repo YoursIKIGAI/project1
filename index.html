@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CHRONICLE — Spirit · Time · Truth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- LAYER 0: Living ambient canvas — reacts to typing energy + task completions -->
+  <canvas id="bgCanvas"></canvas>
+  <!-- LAYER 1: Film grain texture -->
+  <div class="grain"></div>
+  <!-- LAYER 2: Radial glow that shifts color with mood -->
+  <div class="glow-orb" id="glowOrb"></div>
+
+  <!-- ══════════════ HEADER ══════════════ -->
+  <header class="hdr">
+    <div class="hdr-brand">
+      <!-- Mini spirit portrait in header -->
+      <canvas id="miniSpirit" width="40" height="40"></canvas>
+      <div class="hdr-title-wrap">
+        <span class="hdr-logo">CHRONICLE</span>
+        <span class="hdr-tagline" id="hdrTagline">Awaiting your first move…</span>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="ntab active" data-tab="tasks"     role="tab" aria-selected="true" >⏱ Tasks</button>
+      <button class="ntab"        data-tab="journal"   role="tab" aria-selected="false">✦ Note</button>
+      <button class="ntab"        data-tab="analytics" role="tab" aria-selected="false">◎ Reckoning</button>
+    </nav>
+
+    <div class="hdr-right">
+      <!-- XP bar -->
+      <div class="xp-wrap" title="Spirit XP">
+        <span class="xp-lv" id="xpLevel">Lv 1</span>
+        <div class="xp-track"><div class="xp-bar" id="xpBar"></div></div>
+        <span class="xp-num" id="xpNum">0 xp</span>
+      </div>
+      <!-- Export button -->
+      <button class="btn-export" id="btnExport">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Save Aura
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════ MAIN LAYOUT ══════════════ -->
+  <main class="main">
+
+    <!-- ── SPIRIT ANIMAL SIDEBAR (always visible) ── -->
+    <aside class="spirit-aside">
+      <!-- Main spirit canvas -->
+      <div class="spirit-stage">
+        <div class="spirit-halo" id="spiritHalo"></div>
+        <canvas id="spiritCanvas" width="200" height="200"></canvas>
+      </div>
+
+      <div class="spirit-name-display">
+        <div class="snd-name" id="spiritNameEl">—</div>
+        <div class="snd-state" id="spiritStateEl">Feed me tasks…</div>
+      </div>
+
+      <!-- Spirit vitality bar -->
+      <div class="vitality-wrap">
+        <div class="vit-label">Vitality</div>
+        <div class="vit-track">
+          <div class="vit-fill" id="vitFill"></div>
+          <div class="vit-glow" id="vitGlow"></div>
+        </div>
+        <div class="vit-pct" id="vitPct">0%</div>
+      </div>
+
+      <!-- Mini stats row -->
+      <div class="spirit-stats">
+        <div class="sstat"><div class="sstat-v" id="ssStreak">0</div><div class="sstat-l">streak</div></div>
+        <div class="sstat-sep">·</div>
+        <div class="sstat"><div class="sstat-v" id="ssDone">0</div><div class="sstat-l">done</div></div>
+        <div class="sstat-sep">·</div>
+        <div class="sstat"><div class="sstat-v" id="ssAcc">—</div><div class="sstat-l">accuracy</div></div>
+      </div>
+
+      <!-- Achievement badges -->
+      <div class="badges-label">Achievements</div>
+      <div class="badges" id="badgesEl">
+        <div class="badge-empty">Complete tasks to earn badges</div>
+      </div>
+    </aside>
+
+    <!-- ── CONTENT PANELS ── -->
+    <div class="panels">
+
+      <!-- ══ PANEL: TASKS ══ -->
+      <section class="panel active" id="panel-tasks">
+        <div class="panel-cols">
+
+          <!-- Add task card -->
+          <div class="card">
+            <div class="card-eyebrow">01 / PLAN</div>
+            <h2 class="card-h">Add a<br/><em>Task</em></h2>
+
+            <form class="tform" id="taskForm" novalidate>
+              <div class="fg">
+                <label class="fg-lbl">Task name</label>
+                <input class="fg-inp" id="fName" type="text" placeholder="What needs doing…" maxlength="80" autocomplete="off"/>
+                <div class="fg-line"></div>
+              </div>
+
+              <div class="fg">
+                <label class="fg-lbl">Estimated time</label>
+                <div class="time-row">
+                  <div class="time-unit">
+                    <input class="fg-inp fg-inp--t" id="fH" type="number" min="0" max="99" placeholder="0"/>
+                    <span class="tu-lbl">hrs</span>
+                  </div>
+                  <span class="tcolon">:</span>
+                  <div class="time-unit">
+                    <input class="fg-inp fg-inp--t" id="fM" type="number" min="0" max="59" placeholder="00"/>
+                    <span class="tu-lbl">min</span>
+                  </div>
+                </div>
+                <div class="fg-line"></div>
+              </div>
+
+              <div class="fg">
+                <label class="fg-lbl">Category</label>
+                <div class="pills" id="catPills">
+                  <button type="button" class="pill active" data-cat="work">Work</button>
+                  <button type="button" class="pill" data-cat="creative">Creative</button>
+                  <button type="button" class="pill" data-cat="admin">Admin</button>
+                  <button type="button" class="pill" data-cat="learning">Learning</button>
+                  <button type="button" class="pill" data-cat="life">Life</button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" id="btnAdd">
+                + Add to Reality
+              </button>
+            </form>
+          </div>
+
+          <!-- Task list card -->
+          <div class="card card--tasks">
+            <div class="card-eyebrow">02 / EXECUTE</div>
+            <h2 class="card-h">Your<br/><em>Reality</em></h2>
+            <div class="task-list" id="taskList">
+              <div class="empty-state" id="emptyState">
+                <div class="empty-glyph">◌</div>
+                <p>Nothing tracked yet.<br/>Face the music.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══ PANEL: JOURNAL / END OF DAY NOTE ══ -->
+      <section class="panel" id="panel-journal">
+        <div class="journal-layout">
+
+          <!-- The torn-paper note -->
+          <div class="note-card">
+            <div class="note-torn note-torn--top"></div>
+            <div class="note-body">
+              <div class="note-meta">
+                <span class="note-date-el" id="noteDate"></span>
+                <span class="note-mood-el" id="noteMood">—</span>
+              </div>
+              <div class="note-title-wrap">
+                <h2 class="note-h">End of Day<br/><em>Note</em></h2>
+              </div>
+              <textarea
+                id="journalTA"
+                class="note-ta"
+                placeholder="How did today really go?&#10;What surprised you?&#10;What will you carry forward…"
+                maxlength="1500"
+                spellcheck="false"
+              ></textarea>
+              <div class="note-footer-row">
+                <span class="note-chars"><span id="jChars">0</span> / 1500</span>
+                <span class="note-words" id="jWords">0 words</span>
+              </div>
+            </div>
+            <div class="note-torn note-torn--bottom"></div>
+          </div>
+
+          <!-- Journal sidebar -->
+          <div class="journal-side">
+            <div class="js-card">
+              <div class="js-lbl">Typing rhythm</div>
+              <div class="js-val" id="jRhythm">—</div>
+            </div>
+            <div class="js-card">
+              <div class="js-lbl">Writing energy</div>
+              <div class="js-energy">
+                <div class="js-etrack"><div class="js-efill" id="jEFill"></div></div>
+                <span id="jEPct">0%</span>
+              </div>
+            </div>
+            <div class="js-card">
+              <div class="js-lbl">Lexical clarity</div>
+              <div class="js-val" id="jClarity">—</div>
+            </div>
+            <div class="js-card js-card--spirit">
+              <div class="js-lbl">Spirit reaction</div>
+              <div class="js-spirit-msg" id="jSpiritMsg">Start writing…</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══ PANEL: ANALYTICS ══ -->
+      <section class="panel" id="panel-analytics">
+        <div class="analytics-grid">
+
+          <!-- Pie chart -->
+          <div class="card">
+            <div class="card-eyebrow">TIME BREAKDOWN</div>
+            <h2 class="card-h">Where<br/><em>It Went</em></h2>
+            <div class="pie-area">
+              <canvas id="pieCanvas" width="220" height="220"></canvas>
+              <div class="pie-legend" id="pieLegend">
+                <div class="legend-empty">Complete tasks<br/>to see breakdown</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Delusion reckoning -->
+          <div class="card card--delusion">
+            <div class="card-eyebrow">03 / RECKON</div>
+            <h2 class="card-h">Your<br/><em>Delusion</em></h2>
+
+            <div class="dm-wrap">
+              <div class="dm-label">Delusion Index</div>
+              <div class="dm-track">
+                <div class="dm-bg"></div>
+                <div class="dm-pin" id="dmPin"></div>
+              </div>
+              <div class="dm-poles">
+                <span>🔮 Psychic</span><span>🌋 Chaos</span>
+              </div>
+            </div>
+
+            <div class="stats-row">
+              <div class="sr-item"><div class="sr-v" id="sEst">—</div><div class="sr-l">Estimated</div></div>
+              <div class="sr-item"><div class="sr-v" id="sAct">—</div><div class="sr-l">Actual</div></div>
+              <div class="sr-item sr-item--wide"><div class="sr-v" id="sTend">—</div><div class="sr-l">Consistently</div></div>
+            </div>
+
+            <div class="verdict-box" id="verdictBox">
+              <div class="verd-emoji" id="vEmoji">?</div>
+              <div class="verd-text">
+                <div class="verd-title" id="vTitle">Awaiting data</div>
+                <div class="verd-copy" id="vCopy">Finish at least one task.</div>
+              </div>
+            </div>
+
+            <!-- Illustration: est vs actual bars per task -->
+            <div class="illus-section" id="illusSection"></div>
+          </div>
+
+        </div>
+      </section>
+
+    </div><!-- /panels -->
+  </main>
+
+  <!-- ══ LEVEL-UP CELEBRATION OVERLAY ══ -->
+  <div class="lu-overlay hidden" id="luOverlay">
+    <div class="lu-box">
+      <canvas id="luCanvas" width="280" height="280"></canvas>
+      <div class="lu-title" id="luTitle">SPIRIT EVOLVED</div>
+      <div class="lu-name" id="luName"></div>
+      <div class="lu-desc" id="luDesc"></div>
+      <button class="lu-close" id="luClose">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ══ TASK CARD TEMPLATE ══ -->
+  <template id="taskTpl">
+    <div class="task-card" data-id="">
+      <div class="tc-dot" data-cat=""></div>
+      <div class="tc-body">
+        <div class="tc-name"></div>
+        <div class="tc-sub"></div>
+      </div>
+      <div class="tc-right">
+        <div class="tc-timer">00:00:00</div>
+        <div class="tc-acts">
+          <button class="tca tca--start">▶</button>
+          <button class="tca tca--stop hidden">■</button>
+          <button class="tca tca--del">✕</button>
+        </div>
+        <div class="tc-badge hidden"></div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ══ TOAST ══ -->
+  <div class="toast" id="toast"></div>
+
+  <script src="index.js" defer></script>
+</body>
+</html>
