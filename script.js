@@ -71,7 +71,7 @@ const SYM_PRIVATE = Symbol('private');
    ③ REFERENCE TYPES
    ══════════════════════════════════════════════════════════════════════ */
 
-// ⑭ Object.freeze → deeply immutable config
+// ⑭ Object.freez → deeply immutable config
 const CFG = Object.freeze({
   PARTICLE_COUNT:  70,
   TRAIL_DECAY:     0.055,
